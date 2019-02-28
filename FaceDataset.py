@@ -8,11 +8,12 @@ from torchvision import transforms
 from utils import *
 
 class FaceDataset(Dataset):
-    def __init__(self, metadata, subjects, size=(11,11), input_size=(704, 704)):
+    def __init__(self, metadata, subjects, size = (5,5), anchors=[(60,60), (160,160), (240,240)], input_size=(640, 640)):
         
         self.metadata = metadata
         self.subjects = subjects
         self.n_classes = len(subjects)
+        self.anchors = anchors
         self.feature_map_size = size
                            
         #print('{} images'.format(len(self.images)))
@@ -23,21 +24,17 @@ class FaceDataset(Dataset):
     def __getitem__(self, idx):
         #Load image
         img = Image.open(metadata[idx]['path'])
-        subj =  metadata[idx]['subjects'][0]       #TODO: multiple subjects
-        bbox = subj['rect']['top'], subj['rect']['bottom'], subj['rect']['left'], subj['rect']['right']
+        subj =  metadata[idx]['subject']
+        bbox = metadata[idx]['rect']    #(top, bottom, left, right)
         
-        #Crop/resize (paired)
-        d = min(img.height, img.width)
-        scale = input_size[0]/d
-        img = img.resize((int(img.width*scale), int(img.height*scale)))
-        bbox = Resize(bbox, scale)
-         
+        #Crop         
         crop_rect = CleverRandomCropArea(bbox, img.size, crop_size=input_size)
         img = img.crop(crop_rect)
         bbox = Crop(bbox, crop_rect)
         
         #Channels: x,y,w,h + confidence + class distribution 
-        feature_map = np.zeros((4+1+n_classes, feature_map_size[0], feature_map_size[1]), dtype=np.float32)
+        n_ancors = len(self.anchors)
+        feature_map = np.zeros((n_ancors*(4+1+n_classes), feature_map_size[0], feature_map_size[1]), dtype=np.float32)
         
         #Construct feature_map from metadata
         subj_index = self.subjects.index(subj['subject'])
@@ -58,7 +55,8 @@ class FaceDataset(Dataset):
         offset_y = (center_y - cells[cell_index_y])/(cells[cell_index_y + 1] - cells[cell_index_y])
         
         #Get anchor transformations: h = anchor_h * exp(t_h)
-        anchor = (1,1)  #TODO: another anchors
+        best_anchor_index = 0 #TODO
+        anchor = self.anchors[best_anchor_index]
         
         bbox_height = abs(top - bottom)
         bbox_width = abs(right - left)
