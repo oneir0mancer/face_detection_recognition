@@ -31,46 +31,24 @@ class FaceDataset(Dataset):
         crop_rect = CleverRandomCropArea(bbox, img.size, crop_size=input_size)
         img = img.crop(crop_rect)
         bbox = Crop(bbox, crop_rect)
-        
-        #Channels: x,y,w,h + confidence + class distribution 
-        n_ancors = len(self.anchors)
-        feature_map = np.zeros((n_ancors*(4+1+n_classes), feature_map_size[0], feature_map_size[1]), dtype=np.float32)
-        
-        #Construct feature_map from metadata
-        subj_index = self.subjects.index(subj['subject'])
-        
         top, bottom, left, right = bbox
         
-        #Relative center of bbox
+        # Get gt boxes
+        # x,y,h,w,class_label
+        gt_boxes = np.zeros((1, 4+1), dtype=np.float32)
+
+        #Relative center and size
         center_x = (left+right)/2/img.width
         center_y = (left+right)/2/img.height
-
-        #Get cell index and relative offset
-        cells = np.linspace(0, 1, self.feature_map_size[0] + 1)
-        cell_index_x = np.argmax(cells > center_x)-1
-        offset_x = (center_x - cells[cell_index_x])/(cells[cell_index_x + 1] - cells[cell_index_x])
+        bbox_height = abs(top - bottom)/img.width
+        bbox_width = abs(right - left)/img.height
+        subj_index = self.subjects.index(subj['subject'])
         
-        cells = np.linspace(0, 1, self.feature_map_size[1] + 1)
-        cell_index_y = np.argmax(cells > center_y)-1
-        offset_y = (center_y - cells[cell_index_y])/(cells[cell_index_y + 1] - cells[cell_index_y])
+        gt_boxes[0, :] = center_x, center_y, bbox_height, bbox_width, subj_index
         
-        #Get anchor transformations: h = anchor_h * exp(t_h)
-        best_anchor_index = 0 #TODO
-        anchor = self.anchors[best_anchor_index]
-        
-        bbox_height = abs(top - bottom)
-        bbox_width = abs(right - left)
-        
-        t_w = np.log(bbox_width/anchor[0])
-        t_h = np.log(bbox_height/anchor[1])
-        
-        #Put everything into feature feature_map
-        feature_map[:5, cell_index_x, cell_index_y] = offset_x, offset_y, t_w, t_h, 1
-        feature_map[5 + subj_index, cell_index_x, cell_index_y] = 1
-            
         #ToTensor
         img = transforms.ToTensor()(img)
         img = transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])(img)
-        feature_map = transforms.ToTensor()(feature_map)
+        gt_boxes = transforms.ToTensor()(gt_boxes)
         
-        return {'img': img, 'map': feature_map}
+        return {'img': img, 'target': gt_boxes}
