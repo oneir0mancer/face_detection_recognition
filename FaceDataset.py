@@ -31,15 +31,15 @@ class FaceDataset(Dataset):
         crop_rect = CleverRandomCropArea(bbox, img.size, crop_size=input_size)
         img = img.crop(crop_rect)
         bbox = Crop(bbox, crop_rect)
-        top, bottom, left, right = bbox
         
+        top, bottom, left, right = bbox
         # Get gt boxes
         # x,y,h,w,class_label
         gt_boxes = np.zeros((1, 4+1), dtype=np.float32)
 
         #Relative center and size
         center_x = (left+right)/2/img.width
-        center_y = (left+right)/2/img.height
+        center_y = (top+bottom)/2/img.height
         bbox_height = abs(top - bottom)/img.width
         bbox_width = abs(right - left)/img.height
         subj_index = self.subjects.index(subj['subject'])
