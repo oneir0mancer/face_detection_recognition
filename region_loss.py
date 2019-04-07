@@ -133,7 +133,7 @@ class RegionLoss(nn.Module):
         w = prediction[..., 2]  # Width
         h = prediction[..., 3]  # Height
         pred_conf = torch.sigmoid(prediction[..., 4])  # Conf
-        pred_cls = torch.sigmoid(prediction[..., 5:])  # Cls distribution
+        pred_cls = prediction[..., 5:]  # Cls distribution
         
         # Calculate offsets for each grid       
         grid_x = torch.arange(nW, dtype=torch.float32).repeat(nW, 1).view([1, 1, nH, nW]).to(device)
