@@ -5,7 +5,7 @@ from PIL import Image
 from torch.utils.data import Dataset
 from torchvision import transforms
 
-from utils import *
+from box_transforms import *
 
 class FaceDataset(Dataset):
     def __init__(self, metadata, subjects, input_size=(640, 640)):
@@ -22,6 +22,10 @@ class FaceDataset(Dataset):
     def __getitem__(self, idx):
         #Load image
         img = Image.open(self.metadata[idx]['path'])
+        
+        np_im = np.array(img)[:,:,:3]    #delete alpha if png
+        img = Image.fromarray(np_im)
+        
         subj = self.metadata[idx]['subject']
         bbox = self.metadata[idx]['rect']    #(top, bottom, left, right)
         
@@ -48,6 +52,6 @@ class FaceDataset(Dataset):
         #ToTensor
         img = transforms.ToTensor()(img)
         img = transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])(img)
-        gt_boxes = torch.tensor(gt_boxes, dtype = torch.float32)
+        #gt_boxes = torch.tensor(gt_boxes, dtype = torch.float32)
         
         return {'img': img, 'target': gt_boxes}

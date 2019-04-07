@@ -37,7 +37,7 @@
 
 ![Здесь формула, описывающая loss](docs/loss.png)
 
-(По крайней мере мне так кажется, надл почитать [здесь](https://stats.stackexchange.com/questions/287486/yolo-loss-function-explanation) и [здесь](https://mlblr.com/includes/mlai/index.html#yolov2).)
+(По крайней мере мне так кажется, надo почитать [здесь](https://stats.stackexchange.com/questions/287486/yolo-loss-function-explanation) и [здесь](https://mlblr.com/includes/mlai/index.html#yolov2).)
 
 ## План экспериментов
 ### Экcперимент 1
