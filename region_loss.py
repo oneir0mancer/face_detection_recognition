@@ -94,14 +94,14 @@ def build_targets(pred_boxes, pred_conf, pred_cls, target, anchors, num_anchors,
 
 
 class RegionLoss(nn.Module):
-    def __init__(self, num_classes=0, anchors=[], num_anchors=1, coord_scale=1, obj_scale=1, noobj_scale=1, class_scale=1):
+    def __init__(self, num_classes=0, anchors=[], num_anchors=1, ignore_thres=0.5, coord_scale=1, obj_scale=1, noobj_scale=1, class_scale=1):
         super(RegionLoss, self).__init__()
         self.coord_scale = coord_scale
         self.obj_scale = obj_scale
         self.noobj_scale = noobj_scale
         self.class_scale = class_scale
         
-        self.ignore_thres = 0.5
+        self.ignore_thres = ignore_thres
         
         self.num_classes = num_classes
         self.anchors = anchors
