@@ -109,7 +109,7 @@ class RegionLoss(nn.Module):
       
         self.device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
         
-        self.mse_loss = nn.MSELoss().to(self.device)    #SmoothL1Loss
+        self.mse_loss = nn.SmoothL1Loss().to(self.device)    #
         self.bce_loss = nn.BCELoss().to(self.device)    #
         self.ce_loss = nn.CrossEntropyLoss().to(self.device) #
     
