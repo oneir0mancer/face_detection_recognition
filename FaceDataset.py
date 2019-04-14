@@ -8,13 +8,9 @@ from torchvision import transforms
 from box_transforms import *
 
 class FaceDataset(Dataset):
-    def __init__(self, metadata, subjects, input_size=(640, 640)):
+    def __init__(self, metadata, box_transform=None, img_transform=None):
         
         self.metadata = metadata
-        self.subjects = subjects
-        self.input_size = input_size
-                           
-        #print('{} images'.format(len(self.images)))
 
     def __len__(self):
         return len(self.metadata)
@@ -29,10 +25,8 @@ class FaceDataset(Dataset):
         subj = self.metadata[idx]['subject']
         bbox = self.metadata[idx]['rect']    #(top, bottom, left, right)
         
-        #Crop         
-        crop_rect = CleverRandomCropArea(bbox, img.size, crop_size=self.input_size)
-        img = img.crop(crop_rect)
-        bbox = Crop(bbox, crop_rect)
+        if box_transform:
+            img, bbox = box_transform(img, bbox)        
         
         top, bottom, left, right = bbox
         # Get gt boxes
@@ -44,14 +38,12 @@ class FaceDataset(Dataset):
         center_y = (top+bottom)/2/img.height
         bbox_height = abs(top - bottom)/img.width
         bbox_width = abs(right - left)/img.height
-        #subj_index = self.subjects.index(subj['subject'])
         subj_index = subj
         
         gt_boxes[0, :] = center_x, center_y, bbox_height, bbox_width, subj_index
         
         #ToTensor
-        img = transforms.ToTensor()(img)
-        img = transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])(img)
-        #gt_boxes = torch.tensor(gt_boxes, dtype = torch.float32)
+        if img_transform:
+            img = img_transform(img)
         
         return {'img': img, 'target': gt_boxes}
