@@ -36,7 +36,7 @@ def Resize(rect, scale):
 def CleverRandomCropArea(rect, img_size, crop_size=(320, 320)):
     
     top, bottom, left, right = rect
-    h, w = img_size
+    w, h = img_size
     crop_w, crop_h = crop_size
     
     if w < crop_w or h < crop_h:
