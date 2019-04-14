@@ -109,31 +109,35 @@ class RegionLoss(nn.Module):
       
         self.device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
         
+        self.metric_fn = ArcMarginProduct(512, num_classes, s=30, m=0.5, easy_margin=False).to(device)
+
         self.mse_loss = nn.SmoothL1Loss().to(self.device)    #
         self.bce_loss = nn.BCELoss().to(self.device)    #
         self.ce_loss = nn.CrossEntropyLoss().to(self.device) #
     
-    def forward(self, output, target):
-        #output : B x A*(4+1+num_classes) x H x W
+    def forward(self, x_reg, x_class, target):
+        #x_reg : B x A*(4+1) x H x W
+        #x_class : B x A*(512) x H x W
         
         device = self.device
         #stride = self.image_dim / nG   #this rescales anchors for mb multiscale, nG is grid size nH or nW
         stride = 1
         
-        nB, _ , nH, nW = output.shape
+        nB, _, nH, nW = x_reg.shape
         nA = self.num_anchors
         nC = self.num_classes
         
-        output = output.view(nB, nA, (4+1+nC), nH, nW)         # reshape for convenience
-        prediction = output.permute(0, 1, 3, 4, 2).contiguous()    # Get bbox_attr dimention to be the last
+        # Reshape and put bbox attributes last
+        x_reg = x_reg.view(nB, nA, (4+1), nH, nW)      
+        x_reg = x_reg.permute(0, 1, 3, 4, 2)     #.contiguous()
         
         # Get attributes from output tensor
-        x = torch.sigmoid(prediction[..., 0])  # Center x
-        y = torch.sigmoid(prediction[..., 1])  # Center y
-        w = prediction[..., 2]  # Width
-        h = prediction[..., 3]  # Height
-        pred_conf = torch.sigmoid(prediction[..., 4])  # Conf
-        pred_cls = prediction[..., 5:]  # Cls distribution
+        x = torch.sigmoid(x_reg[..., 0])  # Center x
+        y = torch.sigmoid(x_reg[..., 1])  # Center y
+        w = x_reg[..., 2]  # Width
+        h = x_reg[..., 3]  # Height
+        pred_conf = torch.sigmoid(x_reg[..., 4])  # Conf
+        pred_cls = x_class   #Class distribution
         
         # Calculate offsets for each grid       
         grid_x = torch.arange(nW, dtype=torch.float32).repeat(nW, 1).view([1, 1, nH, nW]).to(device)
@@ -143,7 +147,7 @@ class RegionLoss(nn.Module):
         anchor_h = scaled_anchors[:, 1].view((1, nA, 1, 1))
         
         # Add offset and scale with anchors
-        pred_boxes = torch.FloatTensor(prediction[..., :4].shape).to(device)
+        pred_boxes = torch.FloatTensor(x_reg[..., :4].shape).to(device)
         pred_boxes[..., 0] = x.data + grid_x
         pred_boxes[..., 1] = y.data + grid_y
         pred_boxes[..., 2] = torch.exp(w.data) * anchor_w
@@ -153,10 +157,6 @@ class RegionLoss(nn.Module):
         nGT, nCorrect, mask, conf_mask, tx, ty, tw, th, tconf, tcls = build_targets(pred_boxes, pred_conf, pred_cls, target, self.anchors,
                                                                                     num_anchors=nA, num_classes=nC, grid_size=(nH,nW), 
                                                                                     ignore_thres=self.ignore_thres, device=device)
-        
-        #nProposals = int((pred_conf > 0.5).sum().item())
-        #precision = float(nCorrect / nProposals)
-        #recall = float(nCorrect / nGT) if nGT else 1
         
         # Get conf mask where gt and where there is no gt
         conf_mask_true = mask
