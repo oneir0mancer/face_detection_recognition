@@ -11,6 +11,8 @@ class FaceDataset(Dataset):
     def __init__(self, metadata, box_transform=None, img_transform=None):
         
         self.metadata = metadata
+        self.box_transform = box_transform
+        self.img_transform = img_transform
 
     def __len__(self):
         return len(self.metadata)
@@ -25,8 +27,8 @@ class FaceDataset(Dataset):
         subj = self.metadata[idx]['subject']
         bbox = self.metadata[idx]['rect']    #(top, bottom, left, right)
         
-        if box_transform:
-            img, bbox = box_transform(img, bbox)        
+        if self.box_transform:
+            img, bbox = self.box_transform(img, bbox)        
         
         top, bottom, left, right = bbox
         # Get gt boxes
@@ -43,7 +45,7 @@ class FaceDataset(Dataset):
         gt_boxes[0, :] = center_x, center_y, bbox_height, bbox_width, subj_index
         
         #ToTensor
-        if img_transform:
-            img = img_transform(img)
+        if self.img_transform:
+            img = self.img_transform(img)
         
         return {'img': img, 'target': gt_boxes}
