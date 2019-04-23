@@ -25,6 +25,7 @@ class ArcMarginProduct(nn.Module):
     def forward(self, input, label):
         # cos(theta)
         cosine = F.linear(F.normalize(input), F.normalize(self.weight))
+        cosine = F.normalize(cosine)  #FIXME come up w/ better way to keep this normalized
         # cos(theta + m)
         sine = torch.sqrt(1.0 - torch.pow(cosine, 2))
         phi = cosine * self.cos_m - sine * self.sin_m
