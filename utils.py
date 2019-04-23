@@ -32,6 +32,27 @@ def bbox_iou(box1, box2, x1y1x2y2=True):
 
     return iou
 
+def bbox_iou_numpy(box1, box2):
+    area = (box2[2] - box2[0]) * (box2[3] - box2[1])
+
+    iw = np.minimum(np.expand_dims(box1[2], axis=1), box2[2]) - np.maximum(
+        np.expand_dims(box1[0], 1), box2[0]
+    )
+    ih = np.minimum(np.expand_dims(box1[3], axis=1), box2[3]) - np.maximum(
+        np.expand_dims(box1[1], 1), box2[1]
+    )
+
+    iw = np.maximum(iw, 0)
+    ih = np.maximum(ih, 0)
+
+    ua = np.expand_dims((box1[2] - box1[0]) * (box1[3] - box1[1]), axis=1) + area - iw * ih
+
+    ua = np.maximum(ua, np.finfo(float).eps)
+
+    intersection = iw * ih
+
+    return intersection / ua
+
 #TODO IoU among ALL the classes together. They are exclusive
 def non_max_suppression(prediction, num_classes, conf_thres=0.5, nms_thres=0.4):
     """
