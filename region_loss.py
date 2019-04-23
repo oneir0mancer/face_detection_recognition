@@ -109,8 +109,6 @@ class RegionLoss(nn.Module):
       
         self.device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
         
-        self.metric_fn = ArcMarginProduct(512, num_classes, s=30, m=0.5, easy_margin=False).to(device)
-
         self.mse_loss = nn.SmoothL1Loss().to(self.device)    #
         self.bce_loss = nn.BCELoss().to(self.device)    #
         self.ce_loss = nn.CrossEntropyLoss().to(self.device) #
@@ -129,7 +127,7 @@ class RegionLoss(nn.Module):
         
         # Reshape and put bbox attributes last
         x_reg = x_reg.view(nB, nA, (4+1), nH, nW)      
-        x_reg = x_reg.permute(0, 1, 3, 4, 2)     #.contiguous()
+        x_reg = x_reg.permute(0, 1, 3, 4, 2)   #.contiguous()
         
         # Get attributes from output tensor
         x = torch.sigmoid(x_reg[..., 0])  # Center x
@@ -167,6 +165,9 @@ class RegionLoss(nn.Module):
         loss_w = self.coord_scale * self.mse_loss(w[mask], tw[mask])    #TODO sqrt
         loss_h = self.coord_scale * self.mse_loss(h[mask], th[mask])    #TODO sqrt
         
+        if torch.isnan(pred_conf.min()).any():
+            assert(0)
+            
         loss_conf = self.noobj_scale * self.bce_loss(pred_conf[conf_mask_false], tconf[conf_mask_false]) + \
                     self.obj_scale * self.bce_loss(pred_conf[conf_mask_true], tconf[conf_mask_true])
           
