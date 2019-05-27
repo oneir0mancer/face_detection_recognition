@@ -113,13 +113,10 @@ class RegionLoss(nn.Module):
         self.bce_loss = nn.BCELoss().to(self.device)    #
         self.ce_loss = nn.CrossEntropyLoss().to(self.device) #
     
-    def forward(self, x_reg, x_class, target):
-        #x_reg : B x A*(4+1) x H x W
-        #x_class : B x A*(512) x H x W
-        
+    def forward(self, x_reg, x_class, target):       
         #stride = self.image_dim / nG   #this rescales anchors for mb multiscale, nG is grid size nH or nW
         stride = 1
-        _, _, nH, nW = x_reg.shape
+        _, _, nH, nW, _ = x_reg.shape
         
         # Get attributes from output tensor
         x = torch.sigmoid(x_reg[..., 0])  # Center x
