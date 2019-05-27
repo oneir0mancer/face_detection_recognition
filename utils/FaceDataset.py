@@ -5,8 +5,6 @@ from PIL import Image
 from torch.utils.data import Dataset
 from torchvision import transforms
 
-from box_transforms import *
-
 class FaceDataset(Dataset):
     def __init__(self, metadata, box_transform=None, img_transform=None):
         
