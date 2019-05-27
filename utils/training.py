@@ -67,7 +67,7 @@ def validate(valloader, set_size):
 	
 
 import time
-from utils import non_max_suppression, bbox_iou_numpy
+from utils.utils import non_max_suppression, bbox_iou_numpy
 
 def test(testloader):
 	net.eval()
