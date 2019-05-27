@@ -30,7 +30,7 @@ def arg_parse():
     parser.add_argument("--reso", dest = 'reso', help = "Input resolution",
                         default = 320, type = int)
     parser.add_argument("--bs", dest = 'batch_size', help = "Batch size",
-                        default = 320, type = int)
+                        default = 100, type = int)
     parser.add_argument("--epoch", dest = 'num_epoch', help = "Number of epochs",
                         default = 20, type = int)
     return parser.parse_args()
@@ -118,8 +118,6 @@ def test(testloader):
 			x_class = classifier(x_features, batch['target'].to(device))
 			
 			nB,nA,nH,nW,nC = x_class.size()
-
-			anchors = anchors
 			stride = 1
 			
 			prediction = torch.cat((x_reg, x_class), dim=-1)
