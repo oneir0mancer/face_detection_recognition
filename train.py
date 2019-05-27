@@ -8,31 +8,52 @@ from utils.training import train, validate, test
 from models.models import *
 
 import json
+import argparse
 
-train_labels = './data/train/labels.txt'
-test_labels = './data/test/labels.txt'
-net_weights = ''
-clf_weights = ''
+def arg_parse():
+    parser = argparse.ArgumentParser(description='Script for training the network.')
+   
+    parser.add_argument("--train", dest = 'train_labels', help = "Labels for trainset",
+                        default = "data/train/labels.txt", type = str)    
+    parser.add_argument("--test", dest = 'test_labels', help = "Labels for testset",
+                        default = "data/test/labels.txt", type = str)
+    parser.add_argument("--net", dest = 'net_weights', help = "Path for saving net weights",
+                        default = "./net", type = str)    
+    parser.add_argument("--clf", dest = 'clf_weights', help = "Path for saving classifier weights",
+                        default = "./clf", type = str)
+    parser.add_argument("--classes", dest = 'num_classes', help = "Number of classes",
+                        default = 285, type = int)
+    parser.add_argument("--anchors", dest = "anchor_sizes", help = "Size of anchors",
+                        default = "30,80,120", type = str)
+    parser.add_argument("--reso", dest = 'reso', help = "Input resolution",
+                        default = 320, type = int)
+    parser.add_argument("--bs", dest = 'batch_size', help = "Batch size",
+                        default = 320, type = int)
+    parser.add_argument("--epoch", dest = 'num_epoch', help = "Number of epochs",
+                        default = 20, type = int)
+    return parser.parse_args()
 
-with open(train_labels, 'r') as f:
+args = arg_parse()
+
+with open(args.train_labels, 'r') as f:
     train_meta = json.load(f)
-with open(test_labels, 'r') as f:
+with open(args.test_labels, 'r') as f:
     test_meta = json.load(f)
 
 #Anchors and classes
-anchors=[(30,30), (80,80), (120,120)]
+anchors=[(int(x), int(x)) for x in args.anchor_sizes.split(',')]
 num_anchors = len(anchors)
-num_classes = 285
+num_classes = args.num_classes
 
 #Transforms on dataset
 box_transform = Compose([
-    ResizeWithBox(320),
-    RandomCropWithBox(320)
+    ResizeWithBox(args.reso),
+    RandomCropWithBox(args.reso)
 ])
 
 val_box_transform = Compose([
-    ResizeWithBox(320),
-    CenterCropWithBox(320)
+    ResizeWithBox(args.reso),
+    CenterCropWithBox(args.reso)
 ])
 
 transform = transforms.Compose([
@@ -50,7 +71,7 @@ val_transform = transforms.Compose([
 trainset = FaceDataset(train_meta, box_transform=box_transform, img_transform=transform)
 testset = FaceDataset(test_meta, box_transform = val_box_transform, img_transform=val_transform)
 
-batch_size = 100
+batch_size = args.batch_size
 trainloader = DataLoader(trainset, batch_size=batch_size, shuffle=True)
 testloader = DataLoader(testset, batch_size=batch_size, shuffle=False)
 
@@ -70,13 +91,11 @@ optimizer = torch.optim.Adam([{'params': net.parameters()}, {'params': classifie
 from torch.optim.lr_scheduler import StepLR
 scheduler = StepLR(optimizer, 10)
 
-#Start training
-num_epoch = 20
+print("Start training...")
 history = []
 
-print("Start training...")
 net.train()
-for epoch in range(num_epoch):
+for epoch in range(args.num_epoch):
     scheduler.step()
     train_loss = train(trainloader, len(trainset), info_step=10)
     val_loss = validate(testloader, len(testset))
@@ -85,12 +104,12 @@ for epoch in range(num_epoch):
 print("Test...")
 testloader = DataLoader(testset, batch_size=1, shuffle=False)
 mae, iou, acc, time_checkpoint = test(testloader)
-print("mae = ", mae/set_size*320, " pixels")
+print("mae = ", mae/set_size*args.reso, " pixels")
 print("iou = ", 100*iou/set_size, "%")
 print("acc = ", 100*acc/set_size, "%")
 print("fps = ", set_size/time_checkpoint)
 
 print("Save weights...")
-torch.save(net.state_dict(), net_weights)
-torch.save(classifier.state_dict(), clf_weights)
+torch.save(net.state_dict(), args.net_weights)
+torch.save(classifier.state_dict(), args.clf_weights)
 print("Done")

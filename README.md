@@ -1,4 +1,4 @@
-# face_detection_recognition
+# Joint detection-identification with convolutional neural networks
 
 Этот репозиторий содержит код к дипломной работе по распознаванию лиц.
 Идея работы - перейти от пайплайна detect->align->identify к решению совмещенной задачи детектирования-идентификации, 
@@ -50,7 +50,7 @@ Classification head получает из тензора признаков те
 
 Результаты:
 
-|              | ResNet34 + dlib | This net |
+|              | ResNet34 + dlib | Described net |
 | ------------ | --------------- | -------- |
 | **Accuracy**     | 97.54%  | 98.15%  |
 | **Mean IoU**  | 79.82%  | 78.88%  |

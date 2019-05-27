@@ -4,10 +4,14 @@ from PIL import Image
 
 import os
 import json
+import argparse
 
 from utils.box_transforms import ResizeBox
 
-def train_test_split(train_dir='data/train/', test_dir='data/test/', faces_dir='./', input_size=320, test_ratio=0.2, random_seed=0):   
+def get_folders(path):
+    return list(filter(lambda s: os.path.isdir(os.path.join(path, s)), os.listdir(path)))
+
+def train_test_split(train_dir='data/train/', test_dir='data/test/', root_dir='faces/', input_size=320, test_ratio=0.2, random_seed=0):   
     random.seed(random_seed)
 
     #Create directories for train/cv/test/ data
@@ -19,8 +23,8 @@ def train_test_split(train_dir='data/train/', test_dir='data/test/', faces_dir='
     #Load metadata
     metadata = []
 
-    for dir in ['fei', 'caltech_faces', 'gt_db', 'mine']:
-        with open(faces_dir + 'faces/' + dir + '/labels/labels.txt', 'r') as f:
+    for dir in get_folders(root_dir):
+        with open(root_dir + dir + '/labels/labels.txt', 'r') as f:
             metadata.extend(json.load(f))
 
     #Transform to dict for convenience
@@ -52,7 +56,7 @@ def train_test_split(train_dir='data/train/', test_dir='data/test/', faces_dir='
         
         #Test
         for img_path in images[:n_test_images]:
-            img = Image.open(faces_dir + img_path)
+            img = Image.open(img_path)
             
             rect = metadata[img_path]['rect']
             top, bottom, left, right = rect['top'], rect['bottom'], rect['left'], rect['right']
@@ -64,7 +68,7 @@ def train_test_split(train_dir='data/train/', test_dir='data/test/', faces_dir='
             (top, bottom, left, right) = ResizeBox((top, bottom, left, right), (scale,scale))
             
             #Save resized img
-            name = img_path.split('/')[-1]
+            name = img_path.split('/')[-1]train_dir
             new_img_path = test_dir + str(i) + '/' + name
             img.save(new_img_path)
             
@@ -73,7 +77,7 @@ def train_test_split(train_dir='data/train/', test_dir='data/test/', faces_dir='
         #Train
         for img_path in images[n_test_images:]:
             
-            img = Image.open(faces_dir + img_path)
+            img = Image.open(img_path)
             
             rect = metadata[img_path]['rect']
             top, bottom, left, right = rect['top'], rect['bottom'], rect['left'], rect['right']
@@ -97,8 +101,24 @@ def train_test_split(train_dir='data/train/', test_dir='data/test/', faces_dir='
     with open(train_dir + 'labels.txt', 'w+') as fs:
         json.dump(train_meta, fs)
         
-    with open(faces_dir + 'subjects.txt', 'w+') as fs:
+    with open(root_dir + 'subjects.txt', 'w+') as fs:
         json.dump(subj_meta, fs)
 
+def arg_parse():
+    parser = argparse.ArgumentParser(description='Train-test split')
+   
+    parser.add_argument("--train", dest = 'train_dir', help = "Directory for trainset",
+                        default = "data/train/", type = str)    
+    parser.add_argument("--test", dest = 'test_dir', help = "Directory for testset",
+                        default = "data/test/", type = str)
+    parser.add_argument("--root", dest = 'root_dir', help = "Root directory of data",
+                        default = "./", type = str)    
+    parser.add_argument("--reso", dest = 'input_size', help = "Image size",
+                        default = 320, type = int)
+    parser.add_argument("--ratio", dest = "test_ratio", help = "Split ratio", default = 0.2)
+    
+    return parser.parse_args()
+
 if __name__ == "__main__":
-    train_test_split()
+    args = arg_parse()
+    train_test_split(args.train_dir, args.test_dir, args.root_dir, args.input_size, args.test_ratio)
