@@ -7,8 +7,7 @@ def RectSize(rect):
     h = abs(bottom - top)
     return h, w
     
-def Crop(rect, crop_area):
-    '''Clamp bbox with crop area'''
+def CropBox(rect, crop_area):
     top, bottom, left, right = rect
     x0, y0, x1, y1 = crop_area
     
@@ -23,8 +22,7 @@ def Crop(rect, crop_area):
     
     return (top, bottom, left, right)
 
-def Resize(rect, scale):
-    '''Resize bbox'''
+def ResizeBox(rect, scale):
     top, bottom, left, right = rect
     scale_x, scale_y = scale
     
@@ -50,9 +48,6 @@ def CleverRandomCropArea(rect, img_size, crop_size=(320, 320)):
     return (x0, y0, x1, y1)
 
 def expand_box(box, img_size=(320,320), rate=0.2):
-    '''
-    Add rate*size to both sides
-    '''
     top, bottom, left, right = box
     
     h = abs(bottom-top)
@@ -89,11 +84,11 @@ class ResizeWithBox(object):
             if isinstance(self.size, int):
                 dim = min(w,h)
                 scale = self.size/dim
-                box = Resize(box, (scale,scale))
+                box = ResizeBox(box, (scale,scale))
             else:
                 scale_y = self.size[0]/h
                 scale_x = self.size[1]/w
-                box = Resize(box, (scale_x,scale_y))
+                box = ResizeBox(box, (scale_x,scale_y))
         
         return img, box
 
@@ -109,7 +104,7 @@ class RandomCropWithBox(object):
         if box:
             crop_rect = CleverRandomCropArea(box, img.size, crop_size=self.size)
             img = img.crop(crop_rect)
-            box = Crop(box, crop_rect)
+            box = CropBox(box, crop_rect)
         else:
             img = transforms.RandomCrop(self.size)(img)
         
@@ -141,7 +136,7 @@ class CenterCropWithBox(object):
             x0, y0, x1, y1 = x0+offset_x, y0+offset_y, x1+offset_x, y1+offset_y
             
             img = img.crop((x0, y0, x1, y1))
-            box = Crop(box, (x0, y0, x1, y1))
+            box = CropBox(box, (x0, y0, x1, y1))
         else:
             img = transforms.CenterCrop(self.size)(img)
         

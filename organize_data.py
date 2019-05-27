@@ -5,7 +5,7 @@ from PIL import Image
 import os
 import json
 
-from box_transforms import *
+from utils.box_transforms import ResizeBox
 
 def train_test_split(train_dir='data/train/', test_dir='data/test/', faces_dir='./', input_size=320, test_ratio=0.2, random_seed=0):   
     random.seed(random_seed)
@@ -61,7 +61,7 @@ def train_test_split(train_dir='data/train/', test_dir='data/test/', faces_dir='
             size = min(img.height, img.width)
             scale = input_size/size
             img = img.resize((int(img.width*scale), int(img.height*scale)))
-            (top, bottom, left, right) = Resize((top, bottom, left, right), (scale,scale))
+            (top, bottom, left, right) = ResizeBox((top, bottom, left, right), (scale,scale))
             
             #Save resized img
             name = img_path.split('/')[-1]
@@ -82,7 +82,7 @@ def train_test_split(train_dir='data/train/', test_dir='data/test/', faces_dir='
             size = min(img.height, img.width)
             scale = input_size/size
             img = img.resize((int(img.width*scale), int(img.height*scale)))
-            (top, bottom, left, right) = Resize((top, bottom, left, right), (scale,scale))
+            (top, bottom, left, right) = ResizeBox((top, bottom, left, right), (scale,scale))
             
             #Save resized img
             name = img_path.split('/')[-1]
