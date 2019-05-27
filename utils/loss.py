@@ -5,7 +5,7 @@ import math
 import torch.nn as nn
 import torch.nn.functional as F
 
-from utils import bbox_iou
+from utils.utils import bbox_iou
 
 def build_targets(pred_boxes, pred_conf, pred_cls, target, anchors, num_anchors, num_classes, grid_size, ignore_thres, device):
     #pred_boxes: B x A x H x W x 4
@@ -18,8 +18,8 @@ def build_targets(pred_boxes, pred_conf, pred_cls, target, anchors, num_anchors,
     nC = num_classes
     nH, nW = grid_size
 
-    mask = torch.zeros(nB, nA, nH, nW, dtype=torch.uint8).to(device)      #?requires_grad=True
-    conf_mask = torch.ones(nB, nA, nH, nW, dtype=torch.uint8).to(device)  #?requires_grad=True
+    mask = torch.zeros(nB, nA, nH, nW, dtype=torch.uint8).to(device)
+    conf_mask = torch.ones(nB, nA, nH, nW, dtype=torch.uint8).to(device)
 
     tx = torch.zeros(nB, nA, nH, nW).to(device)  
     ty = torch.zeros(nB, nA, nH, nW).to(device)  
