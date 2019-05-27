@@ -68,7 +68,7 @@ def train_test_split(train_dir='data/train/', test_dir='data/test/', root_dir='f
             (top, bottom, left, right) = ResizeBox((top, bottom, left, right), (scale,scale))
             
             #Save resized img
-            name = img_path.split('/')[-1]train_dir
+            name = img_path.split('/')[-1]
             new_img_path = test_dir + str(i) + '/' + name
             img.save(new_img_path)
             
