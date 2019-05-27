@@ -117,9 +117,7 @@ def test(testloader):
 			x_reg, x_features = net(batch['img'].to(device))
 			x_class = classifier(x_features, batch['target'].to(device))
 			
-			nB,_,nH,nW = x_reg.size()
-			nC = 285
-			nA = 3
+			nB,nA,nH,nW,nC = x_class.size()
 
 			anchors = anchors
 			stride = 1
