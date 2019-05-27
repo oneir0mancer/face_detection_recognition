@@ -112,7 +112,7 @@ def arg_parse():
     parser.add_argument("--test", dest = 'test_dir', help = "Directory for testset",
                         default = "data/test/", type = str)
     parser.add_argument("--root", dest = 'root_dir', help = "Root directory of data",
-                        default = "./", type = str)    
+                        default = "faces/", type = str)    
     parser.add_argument("--reso", dest = 'input_size', help = "Image size",
                         default = 320, type = int)
     parser.add_argument("--ratio", dest = "test_ratio", help = "Split ratio", default = 0.2)
