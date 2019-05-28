@@ -1,65 +1,60 @@
 # Joint detection-identification with convolutional neural networks
 
-Этот репозиторий содержит код к дипломной работе по распознаванию лиц.
-Идея работы - перейти от пайплайна detect->align->identify к решению совмещенной задачи детектирования-идентификации, 
-следуя подходу из object detection.
+This repo contains the code for my bachelor thesis on face detection and recognition.
+It explores the ways of speeding up deep face recognition systems by switching from the traditional pipeline - detection -> alignment -> feature extraction -> classification - to oneshot classification-regression framework.
 
-## Гипотеза
-* детектирование лица можно совместить с идентификацией, 
-т.е. использоват одни и те же признаки, извлеченные нейронной сетью,
-и для детектирования изолражения, и для его классификации.
-* подобно подходу, используемому в метрической классификации, можно
-получать embedding для детектированных лиц, который в дальнейшем
-можно использовать для идентификации, измеряя "похожесть" (расстояние) между двумя embedding-ами.
+![Some results](docs/results.png)
 
-## Архитектура сети
-![Схема](docs/scheme.png)
+## Requrements
 
-В качестве сверточной сети для извлечения признаков используется ResNet34. 
-На выхоре из avgpool слоя получается тензор признаков размера *5 x 5 x 512*.
+* `Python >= 3.6`
+* `numpy`
+* `PyTorch >= 1.0`
+* `dlib`
 
-Regression head получает из него тензор размера *5 x 5 x (num_ancors\*5)*, описывающий каждый bounding box.
-4 числа описывают размеры и положение bbox-а, 1 число - уверенность в нахождении в нем лица.
+## Get started
+1. Download [FEI Face Database](https://fei.edu.br/~cet/facedatabase.html), [Caltech Faces 1999 dataset](www.vision.caltech.edu/Image_Datasets/faces/faces.tar), [Georgia Tech face database](http://www.anefian.com/research/face_reco.htm).
+Organize your folders like this:
 
-Classification head получает из тензора признаков тензор размера *5 x 5 x (num_ancors\*512)*.
-Это эмбеддинги лиц, находящихся в bbox-ах. Они передаются линейному классификатору (трехмерная свертка 1x1), и он возвращает
-тензор размера *5 x 5 x (num_ancors\*num_classes)*, содержащий вероятности классов.
+```
+faces
+├── fei
+│   └── ...
+├── caltech_faces
+│   └── ...
+└── gt_db
+    └── ...
+```
 
-## Описание процесса обучения
-Сеть обучается тем же методом, что используется при обучении нейронной сети YOLO.
+*I actually added some photos from google for 10 more subjects, which i will provide shortly.*
 
-Функция потерь - комбинированная, представляет собой сумму smooth L1 loss, бинарной кросс-энтропии и кросс-энтропии.
-Она имеет такую же структуру, что и функция потерь из статьи YOLO:
+2. Run `preprocess.py`. After some time it will generate labels (bbox coordinates and class labels) for your data. *May produce errors since i didn't quite tested it.*
+
+3. Run `organize_data.py`. It will downscale images (to 320px by default) and split them into trainset and testset.
+
+4. Run `train.py` to train the network. If your GPU isn't strong enough you can decrease batch size.
+
+## Network architecture
+![Scheme](docs/scheme.png)
+
+Network architecture is based on YOLO. DarkNet backbone is replaced with much more popular ResNet. Bbox attributes are separated from class probabilities and, furthermore, an additional layer for face embeddings added. This will help implemend things like ArcFace or Triplet loss in the future.
+
+## Training
+The training process is much similar to YOLO training. Loss function is constructed similatly.
 
 ![Здесь формула, описывающая loss](docs/loss.png)
 
-## План экспериментов
-### Экcперимент 1
-Этот эксперимент призван выяснить, насколько изменится точность распознавания лиц,
-если решать комбинированную задачу детектирования и распознавания.
+The difference is that I use smooth L1 loss for localization loss, binary cross-entropy for confidence loss and cross-entropy for classification loss.
 
-Описанная нейронная сеть была обучена детектировать и классифицировать лица
-на небольшом датасете из 285 субъектов, содержащем только одного человека на фотографии.
+Training code is based on [this repo](https://github.com/eriklindernoren/PyTorch-YOLOv3).
 
-Обучающая выборка содержит 3277 изображений. Тестовая выборка содержит 651 изображение.
-Размер изображений - 320 пикселей по меньшей стороне.
+## Results
+This network wos trained and compared against traditional dlib + ResNet34 pipeline.
 
-Для сравнения была обучена ResNet34 для классификации, а для детектирования использовался dlib.
-
-Обе сети учились на случайных кропах 320x320.
-
-Результаты:
-
-|              | ResNet34 + dlib | Described net |
+|              | dlib + ResNet34 | Described net |
 | ------------ | --------------- | -------- |
-| **Accuracy**     | 97.54%  | 98.15%  |
-| **Mean IoU**  | 79.82%  | 78.88%  |
-| **FPS**          | 6.5  | 34.5  |
+| **Accuracy** | 97.54%  | 98.15%  |
+| **Mean IoU** | 79.82%  | 78.88%  |
+| **FPS**      | 6.5  | 34.5  |
 
-### Экcперимент 2: Transfer learning
-
-- [ ] Переобучить только классификатор для нового датасета.
-
-### Экcперимент 3: Metric learning
-
-- [ ] Проверить, насколько компактными получаются ембединги для лиц не из датасета.
+This results were obtained on laptop GTX 1050 GPU, so fps can vary. Also, I don't believe dlib uses GPU acceleration, so comparison against pipelines that use MTCNN will be less impressive.
