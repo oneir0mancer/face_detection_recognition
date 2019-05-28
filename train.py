@@ -25,7 +25,7 @@ def arg_parse():
     parser.add_argument("--clf", dest = 'clf_weights', help = "Path for saving classifier weights",
                         default = "./clf", type = str)
     parser.add_argument("--classes", dest = 'num_classes', help = "Number of classes",
-                        default = 285, type = int)
+                        default = 276, type = int)
     parser.add_argument("--anchors", dest = "anchor_sizes", help = "Size of anchors",
                         default = "30,80,120", type = str)
     parser.add_argument("--reso", dest = 'reso', help = "Input resolution",
