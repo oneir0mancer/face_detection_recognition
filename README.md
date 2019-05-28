@@ -37,19 +37,19 @@ faces
 ## Network architecture
 ![Scheme](docs/scheme.png)
 
-Network architecture is based on YOLO. DarkNet backbone is replaced with much more popular ResNet. Bbox attributes are separated from class probabilities and, furthermore, an additional layer for face embeddings added. This will help implemend things like ArcFace or Triplet loss in the future.
+Network architecture is based on YOLO. DarkNet backbone is replaced with much more popular ResNet. Bbox attributes are separated from class probabilities and, furthermore, an additional layer for face embeddings is added. This will help to implement things like ArcFace or Triplet loss in the future.
 
 ## Training
 The training process is much similar to YOLO training. Loss function is constructed similatly.
 
 ![Здесь формула, описывающая loss](docs/loss.png)
 
-The difference is that I use smooth L1 loss for localization loss, binary cross-entropy for confidence loss and cross-entropy for classification loss.
+The difference is that I use `smooth L1 loss` for localization loss, `binary cross-entropy` for confidence loss and `cross-entropy` for classification loss.
 
 Training code is based on [this repo](https://github.com/eriklindernoren/PyTorch-YOLOv3).
 
 ## Results
-This network wos trained and compared against traditional dlib + ResNet34 pipeline.
+This network wos trained and compared against traditional `dlib + ResNet34` pipeline.
 
 |              | dlib + ResNet34 | Described net |
 | ------------ | --------------- | -------- |
