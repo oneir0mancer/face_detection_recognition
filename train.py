@@ -20,12 +20,12 @@ def arg_parse():
                         default = "data/train/labels.txt", type = str)    
     parser.add_argument("--test", dest = 'test_labels', help = "Labels for testset",
                         default = "data/test/labels.txt", type = str)
+    parser.add_argument("--subj", dest = 'subj_meta', help = "Subjects metadata",
+                        default = "data/subjects.txt", type = str)
     parser.add_argument("--net", dest = 'net_weights', help = "Path for saving net weights",
                         default = "./net", type = str)    
     parser.add_argument("--clf", dest = 'clf_weights', help = "Path for saving classifier weights",
                         default = "./clf", type = str)
-    parser.add_argument("--classes", dest = 'num_classes', help = "Number of classes",
-                        default = 276, type = int)
     parser.add_argument("--anchors", dest = "anchor_sizes", help = "Size of anchors",
                         default = "30,80,120", type = str)
     parser.add_argument("--reso", dest = 'reso', help = "Input resolution",
@@ -191,12 +191,14 @@ args = arg_parse()
 with open(args.train_labels, 'r') as f:
     train_meta = json.load(f)
 with open(args.test_labels, 'r') as f:
-    test_meta = json.load(f)
-
+    test_meta = json.load(f)	
+with open(args.subj_meta, 'r') as f:
+    subj_meta = json.load(f)
+	
 #Anchors and classes
 anchors=[(int(x), int(x)) for x in args.anchor_sizes.split(',')]
 num_anchors = len(anchors)
-num_classes = args.num_classes
+num_classes = len(subj_meta)
 
 #Transforms on dataset
 box_transform = Compose([

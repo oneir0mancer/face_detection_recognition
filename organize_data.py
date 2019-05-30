@@ -11,8 +11,14 @@ from utils.box_transforms import ResizeBox
 def get_folders(path):
     return list(filter(lambda s: os.path.isdir(os.path.join(path, s)), os.listdir(path)))
 
-def train_test_split(train_dir='data/train/', test_dir='data/test/', root_dir='faces/', input_size=320, test_ratio=0.2, random_seed=0):   
+def train_test_split(trainset_root='data/', root_dir='faces/', input_size=320, test_ratio=0.2, random_seed=0):   
     random.seed(random_seed)
+
+    if not os.path.exists(trainset_root):
+        os.makedirs(trainset_root)
+
+	train_dir = trainset_root + 'train/'
+	test_dir = trainset_root + 'test/'
 
     #Create directories for train/cv/test/ data
     for dir in [train_dir, test_dir]:
@@ -101,16 +107,14 @@ def train_test_split(train_dir='data/train/', test_dir='data/test/', root_dir='f
     with open(train_dir + 'labels.txt', 'w+') as fs:
         json.dump(train_meta, fs)
         
-    with open(root_dir + 'subjects.txt', 'w+') as fs:
+    with open(trainset_root + 'subjects.txt', 'w+') as fs:
         json.dump(subj_meta, fs)
 
 def arg_parse():
     parser = argparse.ArgumentParser(description='Train-test split')
    
-    parser.add_argument("--train", dest = 'train_dir', help = "Directory for trainset",
-                        default = "data/train/", type = str)    
-    parser.add_argument("--test", dest = 'test_dir', help = "Directory for testset",
-                        default = "data/test/", type = str)
+    parser.add_argument("--train", dest = 'train_dir', help = "Directory for train and test set",
+                        default = "data/", type = str)    
     parser.add_argument("--root", dest = 'root_dir', help = "Root directory of data",
                         default = "faces/", type = str)    
     parser.add_argument("--reso", dest = 'input_size', help = "Image size",
@@ -121,4 +125,4 @@ def arg_parse():
 
 if __name__ == "__main__":
     args = arg_parse()
-    train_test_split(args.train_dir, args.test_dir, args.root_dir, args.input_size, args.test_ratio)
+    train_test_split(args.train_dir, args.root_dir, args.input_size, args.test_ratio)
