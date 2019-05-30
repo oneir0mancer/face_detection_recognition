@@ -17,8 +17,8 @@ def train_test_split(trainset_root='data/', root_dir='faces/', input_size=320, t
     if not os.path.exists(trainset_root):
         os.makedirs(trainset_root)
 
-	train_dir = trainset_root + 'train/'
-	test_dir = trainset_root + 'test/'
+    train_dir = trainset_root + 'train/'
+    test_dir = trainset_root + 'test/'
 
     #Create directories for train/cv/test/ data
     for dir in [train_dir, test_dir]:
