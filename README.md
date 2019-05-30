@@ -26,13 +26,13 @@ faces
     └── ...
 ```
 
-*I actually added some photos from google for 10 more subjects, which i will provide shortly.*
-
-2. Run `preprocess.py`. After some time it will generate labels (bbox coordinates and class labels) for your data. *May produce errors since i didn't quite tested it.*
+2. Run `preprocess.py`. After some time it will generate labels (bbox coordinates and class labels) for your data.
 
 3. Run `organize_data.py`. It will downscale images (to 320px by default) and split them into trainset and testset.
 
-4. Run `train.py` to train the network. If your GPU isn't strong enough you can decrease batch size.
+Alterantively, download [already preprocessed dataset](https://drive.google.com/file/d/18fbb-puqi6hXyMtc0SgZ0MfBLOwlQ9zX/view?usp=sharing) that I used. It also contains images from google for 9 more subjects.
+
+Run `train.py` to train the network.
 
 ## Network architecture
 ![Scheme](docs/scheme.png)
@@ -42,14 +42,14 @@ Network architecture is based on YOLO. DarkNet backbone is replaced with much mo
 ## Training
 The training process is much similar to YOLO training. Loss function is constructed similatly.
 
-![Здесь формула, описывающая loss](docs/loss.png)
+![loss](docs/loss.png)
 
 The difference is that I use `smooth L1 loss` for localization loss, `binary cross-entropy` for confidence loss and `cross-entropy` for classification loss.
 
-Training code is based on [this repo](https://github.com/eriklindernoren/PyTorch-YOLOv3).
-
 ## Results
-This network wos trained and compared against traditional `dlib + ResNet34` pipeline.
+This network was trained (on Google Colab) for 25 epochs with batch size = 128.
+
+It was compared against traditional `dlib + ResNet34` pipeline.
 
 |              | dlib + ResNet34 | Described net |
 | ------------ | --------------- | -------- |
@@ -57,4 +57,4 @@ This network wos trained and compared against traditional `dlib + ResNet34` pipe
 | **Mean IoU** | 79.82%  | 78.88%  |
 | **FPS**      | 6.5  | 34.5  |
 
-This results were obtained on laptop GTX 1050 GPU, so fps can vary. Also, I don't believe dlib uses GPU acceleration, so comparison against pipelines that use MTCNN will be less impressive.
+This numbers were obtained on laptop GTX 1050 GPU, so fps can vary. Also, I don't believe dlib uses GPU acceleration, so comparison against pipelines that use MTCNN will be less impressive.
