@@ -88,7 +88,7 @@ if __name__ == "__main__":
 
     print("Create directories for label data")
     for dir in get_folders(base_dir):
-        path = base_dir + dir + 'labels/'
+        path = base_dir + dir + '/labels/'
         if not os.path.exists(path):
             print('Creating {}'.format(path))
             os.makedirs(path)
