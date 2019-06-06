@@ -1,7 +1,7 @@
 # Joint detection-identification with convolutional neural networks
 
 This repo contains the code for my bachelor thesis on face detection and recognition.
-It explores the ways of speeding up deep face recognition systems by switching from the traditional pipeline - detection -> alignment -> feature extraction -> classification - to oneshot classification-regression framework.
+It explores the ways of speeding up deep face recognition systems by switching from the traditional pipeline - detection -> alignment -> feature extraction -> classification - to oneshot regression-classification framework.
 
 ![Some results](docs/results.png)
 
